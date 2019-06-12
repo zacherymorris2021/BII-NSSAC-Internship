@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <random>
 //#include "SocialNetworkScaling.h"
 
 using namespace std;
@@ -17,6 +18,7 @@ vector<int> newInterval(int beingRange, int endRange, int vectorSize);
 
 // global initalization
 int numNodeCopies = 0;
+float rewiringFactor = 0.0;
 
 int main(int argc, char * argv[]) {
     string fileName = argv[1];
@@ -26,7 +28,7 @@ int main(int argc, char * argv[]) {
     numConvert >> numNodeCopies;
 
     // convert resizing string to float
-    float resizingFactor = std::stof(argv[3]);
+    rewiringFactor = std::stof(argv[3]);
 
     // try to read in the file
     ifstream myFileStream(fileName);
@@ -40,7 +42,7 @@ int main(int argc, char * argv[]) {
     string line;
     vector<int> sourcePIDs, sourceActivities, targetPIDs, targetActivities, durations;
 
-    // puts 5 data pieces into vectors
+    // puts the 5 data pieces into vectors
     while(getline(myFileStream, line)) {
         if (line.length() < 58) { // skips first two lines
             stringstream ss(line);
@@ -78,15 +80,17 @@ int main(int argc, char * argv[]) {
     int endRangeTargetPIDs = *max_element(targetPIDs.begin(), targetPIDs.end());
     vector<int> targetCopies = newInterval(beginRangeTargetPIDs, endRangeTargetPIDs, targetPIDs.size());
 
-    for(vector<int>::const_iterator iter = sourceCopies.begin(); iter != sourceCopies.end(); iter++){
-        cout << *iter << endl;
+    // rewiring edges
+    float amountOfRewiring = rewiringFactor * sourcePIDs.size(); // number of times to rewire 1 edge
+    random_device dev; // random number generator for randomly choosing IDs (nodes) to rewire
+    mt19937 randomNumGenerator(dev());
+    uniform_int_distribution<> dis(1, 10);
+    //uniform_int_distribution<> dis(beginRangeSourcePIDs, endRangeSourcePIDs);
+    vector<int> randomIDs;
+    
+    for(int i = 0; i < amountOfRewiring; i++){
+        cout << dis(randomNumGenerator) << endl;
     }
-    cout << (endRangeSourcePIDs - beginRangeSourcePIDs) + 1 << endl;
-
-    for(vector<int>::const_iterator iter = targetCopies.begin(); iter != targetCopies.end(); iter++){
-        cout << *iter << endl;
-    }
-    cout << (endRangeTargetPIDs - beginRangeTargetPIDs) + 1 << endl;
 
     return 0;
 }
