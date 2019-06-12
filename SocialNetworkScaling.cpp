@@ -12,12 +12,17 @@
 
 using namespace std;
 
+// forward declarations
+vector<int> newInterval(int beingRange, int endRange, int vectorSize);
+
+// global initalization
+int numNodeCopies = 0;
+
 int main(int argc, char * argv[]) {
     string fileName = argv[1];
 
     // convert nodeCopies string to int
     stringstream numConvert(argv[2]);
-    int numNodeCopies = 0;
     numConvert >> numNodeCopies;
 
     // convert resizing string to float
@@ -63,31 +68,50 @@ int main(int argc, char * argv[]) {
     }
     myFileStream.close();
 
-    // make k numNodeCopies
-    // find max in vectors, to get range
+    // make copy nodes for source-nodes (sourceIDs)
     int beginRangeSourcePIDs = *min_element(sourcePIDs.begin(), sourcePIDs.end());
     int endRangeSourcePIDs = *max_element(sourcePIDs.begin(), sourcePIDs.end());
+    vector<int> sourceCopies = newInterval(beginRangeSourcePIDs, endRangeSourcePIDs, sourcePIDs.size());
+
+    // make copy nodes for target-nodes (targetIDs)
     int beginRangeTargetPIDs = *min_element(targetPIDs.begin(), targetPIDs.end());
     int endRangeTargetPIDs = *max_element(targetPIDs.begin(), targetPIDs.end());
+    vector<int> targetCopies = newInterval(beginRangeTargetPIDs, endRangeTargetPIDs, targetPIDs.size());
 
-    // create new range of IDs and populate a vector
-    int maxNewRangeSource = (endRangeSourcePIDs - beginRangeSourcePIDs) + 1;
-    vector<int> sourcePIDsCopy;
-    int count1 = 0;
-    int count2 = 0;
-    while(count1 < maxNewRangeSource && count2 < numNodeCopies){
-        sourcePIDsCopy.push_back(endRangeSourcePIDs + 1);
-        endRangeSourcePIDs++;
-        count1++;
-        count2++;
+    for(vector<int>::const_iterator iter = sourceCopies.begin(); iter != sourceCopies.end(); iter++){
+        cout << *iter << endl;
     }
+    cout << (endRangeSourcePIDs - beginRangeSourcePIDs) + 1 << endl;
 
-    for(vector<int>::const_iterator iter=sourcePIDsCopy.begin(); iter != sourcePIDsCopy.end(); iter++){
-            cout << *iter << endl;
+    for(vector<int>::const_iterator iter = targetCopies.begin(); iter != targetCopies.end(); iter++){
+        cout << *iter << endl;
     }
+    cout << (endRangeTargetPIDs - beginRangeTargetPIDs) + 1 << endl;
 
     return 0;
 }
 
+/**
+ * Creates a new range for the copied nodes. Populates a vector with the new IDs.
+ * @param beginRange
+ * @param endRange
+ * @param vectorSize
+ * @return sourcePIDsCopy
+ */
+vector<int> newInterval(int beginRange, int endRange, int vectorSize){
+    int maxNewRangeSource = (endRange - beginRange) + 1; // not really sure why I have this, we came up with this formula monday [ (b-a)+1 ] -- I think this assumes continuous numbers of data --> probably work with full data
+    vector<int> sourcePIDsCopy;
+    int count1 = 0;
+    int count2 = 0;
+    int count3 = 0;
+    while(count1 < maxNewRangeSource && count2 < numNodeCopies && count3 < vectorSize){
+        sourcePIDsCopy.push_back(endRange + 1);
+        endRange++;
+        count1++;
+        count2++;
+        count3++;
+    }
+    return sourcePIDsCopy;
+}
 
 
