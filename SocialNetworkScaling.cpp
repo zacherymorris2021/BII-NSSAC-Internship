@@ -71,15 +71,36 @@ int main(int argc, char * argv[]) {
     }
     myFileStream.close();
 
-    // make copy nodes for source-nodes (sourceIDs)
+    // make copy nodes for original nodes(IDs)
     int beginRangeSourcePIDs = *min_element(sourcePIDs.begin(), sourcePIDs.end());
     int endRangeSourcePIDs = *max_element(sourcePIDs.begin(), sourcePIDs.end());
-    vector<int> sourceCopies = newInterval(beginRangeSourcePIDs, endRangeSourcePIDs, sourcePIDs.size());
-
-    // make copy nodes for target-nodes (targetIDs)
     int beginRangeTargetPIDs = *min_element(targetPIDs.begin(), targetPIDs.end());
     int endRangeTargetPIDs = *max_element(targetPIDs.begin(), targetPIDs.end());
-    vector<int> targetCopies = newInterval(beginRangeTargetPIDs, endRangeTargetPIDs, targetPIDs.size());
+    vector<int> totalCopies;
+    if(beginRangeSourcePIDs < beginRangeTargetPIDs && endRangeSourcePIDs < endRangeTargetPIDs){
+        totalCopies = newInterval(beginRangeSourcePIDs, endRangeTargetPIDs, sourcePIDs.size() + targetPIDs.size());
+    }
+    else if(beginRangeSourcePIDs > beginRangeTargetPIDs && endRangeSourcePIDs < endRangeTargetPIDs){
+        totalCopies = newInterval(beginRangeTargetPIDs, endRangeTargetPIDs, sourcePIDs.size() + targetPIDs.size());
+    }
+    else if(beginRangeSourcePIDs < beginRangeTargetPIDs && endRangeSourcePIDs > endRangeTargetPIDs){
+        totalCopies = newInterval(beginRangeSourcePIDs, endRangeSourcePIDs, sourcePIDs.size() + targetPIDs.size());
+    }
+    else if(beginRangeSourcePIDs > beginRangeTargetPIDs && endRangeSourcePIDs > endRangeTargetPIDs){
+        totalCopies = newInterval(beginRangeTargetPIDs, endRangeSourcePIDs, sourcePIDs.size() + targetPIDs.size());
+    }
+
+    // split copies into 2 vectors for "source copy" and "target copy" IDs
+    vector<int> sourceCopies, targetCopies;
+    vector<int>::iterator middleItr(totalCopies.begin() + totalCopies.size() / 2);
+    for(auto it = totalCopies.begin(); it != totalCopies.end(); it++){
+        if(distance(it, middleItr) > 0){
+            sourceCopies.push_back(*it);
+        }
+        else{
+            targetCopies.push_back(*it);
+        }
+    }
 
     // rewiring edges -- generating random numbers
     float amountOfRewiring = rewiringFactor * sourcePIDs.size(); // amount of edges to rewire
@@ -107,17 +128,8 @@ int main(int argc, char * argv[]) {
             copyRandomIDs.push_back(random);
         }
     }
-
+    
     // rewiring edges -- making the new edges
-
-
-    for(vector<int>::const_iterator iter = originalRandomIDs.begin(); iter != originalRandomIDs.end(); iter++){
-        cout << *iter << endl;
-    }
-    cout << "--------------" << endl;
-    for(vector<int>::const_iterator iter = copyRandomIDs.begin(); iter != copyRandomIDs.end(); iter++){
-        cout << *iter << endl;
-    }
 
     return 0;
 }
@@ -130,19 +142,19 @@ int main(int argc, char * argv[]) {
  * @return sourcePIDsCopy
  */
 vector<int> newInterval(int beginRange, int endRange, int vectorSize){
-    int maxNewRangeSource = (endRange - beginRange) + 1; // not really sure why I have this, we came up with this formula monday [ (b-a)+1 ] -- I think this assumes continuous numbers of data --> probably work with full data
-    vector<int> sourcePIDsCopy;
+    int maxNewRangeSource = (endRange + 1) + (endRange - 1); // not really sure why I have this, we came up with this formula monday [ (b-a)+1 ] -- I think this assumes continuous numbers of data --> probably work with full data
+    vector<int> PIDsCopy;
     int count1 = 0;
     int count2 = 0;
     int count3 = 0;
     while(count1 < maxNewRangeSource && count2 < numNodeCopies && count3 < vectorSize){
-        sourcePIDsCopy.push_back(endRange + 1);
+        PIDsCopy.push_back(endRange + 1);
         endRange++;
         count1++;
         count2++;
         count3++;
     }
-    return sourcePIDsCopy;
+    return PIDsCopy;
 }
 
 
