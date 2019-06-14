@@ -76,19 +76,13 @@ int main(int argc, char * argv[]) {
     int beginRangeTargetPIDs = *min_element(targetPIDs.begin(), targetPIDs.end());
     int endRangeTargetPIDs = *max_element(targetPIDs.begin(), targetPIDs.end());
     vector<int> totalCopies;
-    if(beginRangeSourcePIDs < beginRangeTargetPIDs && endRangeSourcePIDs < endRangeTargetPIDs){
+    if(endRangeSourcePIDs < endRangeTargetPIDs){
         totalCopies = newInterval(endRangeTargetPIDs, sourcePIDs.size() + targetPIDs.size());
     }
-    else if(beginRangeSourcePIDs > beginRangeTargetPIDs && endRangeSourcePIDs < endRangeTargetPIDs){
-        totalCopies = newInterval(endRangeTargetPIDs, sourcePIDs.size() + targetPIDs.size());
-    }
-    else if(beginRangeSourcePIDs < beginRangeTargetPIDs && endRangeSourcePIDs > endRangeTargetPIDs){
+    else if(endRangeSourcePIDs > endRangeTargetPIDs){
         totalCopies = newInterval(endRangeSourcePIDs, sourcePIDs.size() + targetPIDs.size());
     }
-    else if(beginRangeSourcePIDs > beginRangeTargetPIDs && endRangeSourcePIDs > endRangeTargetPIDs){
-        totalCopies = newInterval(endRangeSourcePIDs, sourcePIDs.size() + targetPIDs.size());
-    }
-
+    
     // split copies into 2 vectors for "source copy" and "target copy" IDs
     vector<int> sourceCopies, targetCopies;
     vector<int>::iterator middleItr(totalCopies.begin() + totalCopies.size() / 2);
@@ -127,7 +121,7 @@ int main(int argc, char * argv[]) {
             copyRandomIDs.push_back(random);
         }
     }
-
+    
     int indexOfOriginalSourcePID = 0;
     int originalTargetPIDToSave = 0;
     int indexOfCopySourcePID = 0;
@@ -175,5 +169,3 @@ vector<int> newInterval(int endRange, int vectorSize){
     }
     return PIDsCopy;
 }
-
-
