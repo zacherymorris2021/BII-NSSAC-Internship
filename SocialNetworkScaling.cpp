@@ -13,19 +13,29 @@
 
 using namespace std;
 
-// forward declarations
-vector<int> newInterval(int endRange, int vectorSize);
-
 // global initalization
-int numNodeCopies = 0;
+int cloningFactor = 0;
 float rewiringFactor = 0.0;
+
+// object declaration
+struct edge {
+    int idNodeOne;
+    int activityNodeOne;
+    int idNodeTwo;
+    int activityNodeTwo;
+    int duration;
+};
+
+// forward declarations
+vector<edge> cloningEdges(int maxID, int minID, int cloningFactor, vector<edge> &vecEdges);
+vector<int> genRandNums(double rewiringFactor, vector<edge> &clonedEdges);
 
 int main(int argc, char * argv[]) {
     string fileName = argv[1];
 
     // convert nodeCopies string to int
     stringstream numConvert(argv[2]);
-    numConvert >> numNodeCopies;
+    numConvert >> cloningFactor;
 
     // convert resizing string to float
     rewiringFactor = std::stof(argv[3]);
@@ -40,132 +50,208 @@ int main(int argc, char * argv[]) {
     string strSourcePID, strSourceActivity, strTargetPID, strTargetActivity, strDuration;
     int sourcePID, sourceActivity, targetPID, targetActivity, duration;
     string line;
-    vector<int> sourcePIDs, sourceActivities, targetPIDs, targetActivities, durations;
 
-    // puts the 5 data pieces into vectors
+    vector<edge> vecEdges;
+    edge originalEdge;
+    string line1, line2;
+
+    // for finding min/max
+    int maxID, minID;
+    int mxSourceID = 0;
+    int mnSourceID = INT32_MAX;
+    int mxTargetID = 0;
+    int mnTargetID = INT32_MAX;
+
+    // puts data members into edge objects, then a vector of edges
+    getline(myFileStream, line1); // removes/stores 2 header lines
+    getline(myFileStream, line2);
+
     while(getline(myFileStream, line)) {
-        if (line.length() < 58) { // skips first two lines
-            stringstream ss(line);
+        stringstream ss(line);
 
-            getline(ss, strSourcePID, ',');
-            sourcePID = stoi(strSourcePID);
-            sourcePIDs.push_back(sourcePID);
+        getline(ss, strSourcePID, ',');
+        sourcePID = stoi(strSourcePID);
 
-            getline(ss, strSourceActivity, ',');
-            sourceActivity = stoi(strSourceActivity);
-            sourceActivities.push_back(sourceActivity);
+        getline(ss, strSourceActivity, ',');
+        sourceActivity = stoi(strSourceActivity);
 
-            getline(ss, strTargetPID, ',');
-            targetPID = stoi(strTargetPID);
-            targetPIDs.push_back(targetPID);
+        getline(ss, strTargetPID, ',');
+        targetPID = stoi(strTargetPID);
 
-            getline(ss, strTargetActivity, ',');
-            targetActivity = stoi(strTargetActivity);
-            targetActivities.push_back(targetActivity);
+        getline(ss, strTargetActivity, ',');
+        targetActivity = stoi(strTargetActivity);
 
-            getline(ss, strDuration, ',');
-            duration = stoi(strDuration);
-            durations.push_back(duration);
+        getline(ss, strDuration, ',');
+        duration = stoi(strDuration);
+
+        // for finding min/max of sourceIDs
+        if(mxSourceID < sourcePID){
+            mxSourceID = sourcePID;
+        }
+        if(mnSourceID > sourcePID){
+            mnSourceID = sourcePID;
+        }
+        // finding min/max of targetIDs
+        if(mxTargetID < targetPID){
+            mxTargetID = targetPID;
+        }
+        if(mnTargetID > targetPID){
+            mnTargetID = targetPID;
+        }
+        // finding absolute max b/w source and target
+        if(mxSourceID < mxTargetID){
+            maxID = mxTargetID;
+        }
+        else{
+            maxID = mxSourceID;
+        }
+        // finding absolute min b/w source and target
+        if(mnSourceID < mnTargetID){
+            minID = mnTargetID;
+        }
+        else{
+            minID = mnSourceID;
+        }
+
+        if(sourcePID > targetPID){ // bidirectional to directed
+            if(((double) rand() / (RAND_MAX)) < 0.5){ // randomizes
+                originalEdge.idNodeOne = sourcePID;
+                originalEdge.activityNodeOne = sourceActivity;
+                originalEdge.idNodeTwo = targetPID;
+                originalEdge.activityNodeTwo = targetActivity;
+                originalEdge.duration = duration;
+                vecEdges.push_back(originalEdge);
+            }
+            else{
+                originalEdge.idNodeOne = targetPID;
+                originalEdge.activityNodeOne = targetActivity;
+                originalEdge.idNodeTwo = sourcePID;
+                originalEdge.activityNodeTwo = sourceActivity;
+                originalEdge.duration = duration;
+                vecEdges.push_back(originalEdge);
+            }
+        }
+        else{
+            // skip line
         }
     }
     myFileStream.close();
 
-    // make copy nodes for original nodes(IDs)
-    int beginRangeSourcePIDs = *min_element(sourcePIDs.begin(), sourcePIDs.end());
-    int endRangeSourcePIDs = *max_element(sourcePIDs.begin(), sourcePIDs.end());
-    int beginRangeTargetPIDs = *min_element(targetPIDs.begin(), targetPIDs.end());
-    int endRangeTargetPIDs = *max_element(targetPIDs.begin(), targetPIDs.end());
-    vector<int> totalCopies;
-    if(endRangeSourcePIDs < endRangeTargetPIDs){
-        totalCopies = newInterval(endRangeTargetPIDs, sourcePIDs.size() + targetPIDs.size());
-    }
-    else if(endRangeSourcePIDs > endRangeTargetPIDs){
-        totalCopies = newInterval(endRangeSourcePIDs, sourcePIDs.size() + targetPIDs.size());
-    }
-    
-    // split copies into 2 vectors for "source copy" and "target copy" IDs
-    vector<int> sourceCopies, targetCopies;
-    vector<int>::iterator middleItr(totalCopies.begin() + totalCopies.size() / 2);
-    for(auto it = totalCopies.begin(); it != totalCopies.end(); it++){
-        if(distance(it, middleItr) > 0){
-            sourceCopies.push_back(*it);
-        }
-        else{
-            targetCopies.push_back(*it);
-        }
+    vector<edge> clonedEdges = cloningEdges(maxID, minID, cloningFactor, vecEdges);
+    for(auto & edge : clonedEdges){
+        cout << edge.idNodeOne << " - " << edge.activityNodeOne << " -- " << edge.idNodeTwo << " - " << edge.activityNodeTwo << " --- " << edge.duration << endl;
     }
 
-    // rewiring edges -- generating random numbers
-    float amountOfRewiring1 = rewiringFactor * sourcePIDs.size(); // amount of edges to rewire
-    float amountOfRewiring2 = amountOfRewiring1;
-    srand(time(NULL)); // srand() seeds rand() automatically
-    // random original IDs
-    vector<int> originalRandomIDs;
-    for(int i = 0; i < amountOfRewiring1; i++){ // populate vector with random IDs to rewire
-        int random = (rand()%(endRangeSourcePIDs - beginRangeSourcePIDs)) + beginRangeSourcePIDs;
-        if(find(originalRandomIDs.begin(), originalRandomIDs.end(), random) != originalRandomIDs.end()){ // gets "rid", moves past duplicate random nums
-            amountOfRewiring1++;
-        }
-        else {
-            originalRandomIDs.push_back(random);
+    cout << "---------------------------" << endl;
+
+    // rewiring --  does not swap activities
+    vector<int> randomNums = genRandNums(rewiringFactor, clonedEdges);
+    while(!randomNums.empty()){
+        int nodeTwoId_a = clonedEdges.at(randomNums.back()).idNodeTwo; // get first ID to swap
+        int nodeTwoAct_a = clonedEdges.at(randomNums.back()).activityNodeTwo; // get first activity to swap
+        int index1 = randomNums.back(); // save index of rand num
+        cout << "first: " << index1 << " " << nodeTwoId_a << endl;
+        randomNums.pop_back(); // remove rand num for next sawpping num
+        int nodeTwoId_b = clonedEdges.at(randomNums.back()).idNodeTwo;
+        int nodeTwoAct_b = clonedEdges.at(randomNums.back()).activityNodeTwo;
+        int index2 = randomNums.back();
+        cout << "second: " << index2 << " " << nodeTwoId_b << endl;
+        randomNums.pop_back();
+        for(auto & edge : clonedEdges){ // traverse edges and swap IDs & activities of node 2
+            if(edge.idNodeTwo == nodeTwoId_a){
+                edge.idNodeTwo = nodeTwoId_b;
+                edge.activityNodeTwo = nodeTwoAct_b;
+            }
+            else if(edge.idNodeTwo == nodeTwoId_b){
+                edge.idNodeTwo = nodeTwoId_a;
+                edge.activityNodeTwo = nodeTwoAct_a;
+            }
         }
     }
-    // random copy IDs
-    vector<int> copyRandomIDs;
-    for(int i = 0; i < amountOfRewiring2; i++){ // populate vector with random IDs to rewire
-        int random = (rand()%(sourceCopies.back() - sourceCopies.front())) + sourceCopies.front(); // maybe be: low+(rand()%(upper-lower+1))
-        if(find(copyRandomIDs.begin(), copyRandomIDs.end(), random) != copyRandomIDs.end()){ // gets "rid", moves past duplicate random nums
-            amountOfRewiring2++;
-        }
-        else {
-            copyRandomIDs.push_back(random);
-        }
+    for(auto & edge : clonedEdges){
+        cout << edge.idNodeOne << " - " << edge.activityNodeOne << " -- " << edge.idNodeTwo << " - " << edge.activityNodeTwo << " --- " << edge.duration << endl;
     }
-    
-    int indexOfOriginalSourcePID = 0;
-    int originalTargetPIDToSave = 0;
-    int indexOfCopySourcePID = 0;
-    int copyTargetPIDToSave = 0;
-    while(!originalRandomIDs.empty() && !copyRandomIDs.empty()){
-        // handles original IDs
-        vector<int>::iterator itOriginal = find(sourcePIDs.begin(), sourcePIDs.end(), originalRandomIDs.back()); // find ID in source ID vector
-        indexOfOriginalSourcePID = distance(sourcePIDs.begin(), itOriginal); // find index of source ID, now have the location of the edge -- randomly chosen
-        originalTargetPIDToSave = targetPIDs.at(indexOfOriginalSourcePID); // have source ID index, target at same index, get target number, store to replace
 
-        // handles copy IDs
-        vector<int>::iterator itCopy = find(sourceCopies.begin(), sourceCopies.end(), copyRandomIDs.back());
-        indexOfCopySourcePID = distance(sourceCopies.begin(), itCopy);
-        copyTargetPIDToSave = targetCopies.at(indexOfCopySourcePID); // store copy target ID, to replace
-
-        // replace -- make new edges
-        replace(targetPIDs.begin(), targetPIDs.end(), originalTargetPIDToSave, copyTargetPIDToSave); // replaces original target ID with copy target ID
-        replace(targetCopies.begin(), targetCopies.end(), copyTargetPIDToSave, originalTargetPIDToSave); // replaces copy target ID with original target ID
-
-        // condition for while loop
-        originalRandomIDs.pop_back();
-        copyRandomIDs.pop_back();
+    // writing scaled network to text file
+    ofstream outputFile;
+    outputFile.open("scaled_network.txt");
+    outputFile << line1 << "\n";
+    outputFile << line2 << "\n";
+    for(auto edge : clonedEdges){ // output each edge -- bidirectional
+        outputFile << edge.idNodeOne << "," << edge.activityNodeOne << "," << edge.idNodeTwo << "," << edge.activityNodeTwo << "," << edge.duration << "\n";
+        outputFile << edge.idNodeTwo << "," << edge.activityNodeTwo << "," << edge.idNodeOne << "," << edge.activityNodeOne << "," << edge.duration << "\n";
     }
+    outputFile.close();
+
     return 0;
 }
 
 /**
- * Creates a new range for the copied nodes. Populates a vector with the new IDs.
- * @param endRange
- * @param vectorSize
- * @return sourcePIDsCopy
+ * Clones the original amount of edges by "K". Returns a vector of cloned and original edges.
+ * @param maxID
+ * @param minID
+ * @param cloningFactor
+ * @param vecEdges
+ * @return vector of cloned and original edges
  */
-vector<int> newInterval(int endRange, int vectorSize){
-    int maxNewRangeSource = (endRange + 1) + (endRange - 1); // assumes continuous numbers for source/target IDs
-    vector<int> PIDsCopy;
-    int count1 = 0;
-    int count2 = 0;
-    int count3 = 0;
-    while(count1 < maxNewRangeSource && count2 < numNodeCopies && count3 < vectorSize){
-        PIDsCopy.push_back(endRange + 1);
-        endRange++;
-        count1++;
-        count2++;
-        count3++;
+vector<edge> cloningEdges(int maxID, int minID, int cloningFactor, vector<edge> &vecEdges){
+    int nodeOneID = maxID + 1;
+    int nodeTwoID = maxID + 2;
+
+    edge clonedEdge;
+    vector<edge> scaledNetwork;
+
+    int count = 0;
+    while(count < cloningFactor){
+        for(auto & edge : vecEdges){
+            clonedEdge.idNodeOne = nodeOneID;
+            clonedEdge.activityNodeOne = edge.activityNodeOne; // keep activities/duration the same for clones
+            clonedEdge.idNodeTwo = nodeTwoID;
+            clonedEdge.activityNodeTwo = edge.activityNodeTwo;
+            clonedEdge.duration = edge.duration;
+
+            scaledNetwork.push_back(clonedEdge); // adding the cloned edges
+
+            nodeOneID = nodeTwoID + 1; // incrementing -- takes care of continuous number IDs
+            nodeTwoID = nodeOneID + 1;
+        }
+        count++;
     }
-    return PIDsCopy;
+    for(auto & edge : vecEdges){ // add original edges
+        scaledNetwork.push_back(edge);
+    }
+    return scaledNetwork;
+}
+
+/**
+ *  Randomly selects two edges in the inputted vector and rewires them by switching IDs of nodeOne and nodeTwo
+ * @param rewiringFactor
+ * @param clonedEdges
+ * @return a vector of rewired edges
+ */
+vector<int> genRandNums(double rewiringFactor, vector<edge> &clonedEdges){
+    int numberToRewire = rewiringFactor * clonedEdges.size();
+
+    // generate random numbers
+    int floor = 0;
+    int ceiling = clonedEdges.size() - 1;
+    int range =(ceiling - floor) + 1;
+    int rndNum;
+    int count = 0;
+    vector<int> randomNums;
+    srand(time(NULL)); // srand() seeds rand() automatically
+    while(count < numberToRewire){
+        rndNum = floor + rand() % range;
+        if(find(randomNums.begin(), randomNums.end(), rndNum) != randomNums.end()){ // if found num already in vector need to generate another num
+            numberToRewire++;
+        }
+        else { // if num not found in vector, add it
+            randomNums.push_back(rndNum);
+        }
+        count++;
+    }
+    for(auto num : randomNums){
+        cout << num << endl;
+    }
+    return randomNums;
 }
