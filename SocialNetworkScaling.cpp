@@ -13,7 +13,7 @@
 
 using namespace std;
 
-// global initalization
+// global declaration/initialization
 int cloningFactor = 0;
 float rewiringFactor = 0.0;
 
@@ -138,25 +138,20 @@ int main(int argc, char * argv[]) {
     myFileStream.close();
 
     vector<edge> clonedEdges = cloningEdges(maxID, minID, cloningFactor, vecEdges);
-    for(auto & edge : clonedEdges){
-        cout << edge.idNodeOne << " - " << edge.activityNodeOne << " -- " << edge.idNodeTwo << " - " << edge.activityNodeTwo << " --- " << edge.duration << endl;
-    }
 
-    cout << "---------------------------" << endl;
-
-    // rewiring --  does not swap activities
+    // rewiring -- rewires node ID and activity
     vector<int> randomNums = genRandNums(rewiringFactor, clonedEdges);
     while(!randomNums.empty()){
         int nodeTwoId_a = clonedEdges.at(randomNums.back()).idNodeTwo; // get first ID to swap
         int nodeTwoAct_a = clonedEdges.at(randomNums.back()).activityNodeTwo; // get first activity to swap
         int index1 = randomNums.back(); // save index of rand num
-        cout << "first: " << index1 << " " << nodeTwoId_a << endl;
         randomNums.pop_back(); // remove rand num for next sawpping num
+
         int nodeTwoId_b = clonedEdges.at(randomNums.back()).idNodeTwo;
         int nodeTwoAct_b = clonedEdges.at(randomNums.back()).activityNodeTwo;
         int index2 = randomNums.back();
-        cout << "second: " << index2 << " " << nodeTwoId_b << endl;
         randomNums.pop_back();
+
         for(auto & edge : clonedEdges){ // traverse edges and swap IDs & activities of node 2
             if(edge.idNodeTwo == nodeTwoId_a){
                 edge.idNodeTwo = nodeTwoId_b;
@@ -167,9 +162,6 @@ int main(int argc, char * argv[]) {
                 edge.activityNodeTwo = nodeTwoAct_a;
             }
         }
-    }
-    for(auto & edge : clonedEdges){
-        cout << edge.idNodeOne << " - " << edge.activityNodeOne << " -- " << edge.idNodeTwo << " - " << edge.activityNodeTwo << " --- " << edge.duration << endl;
     }
 
     // writing scaled network to text file
@@ -202,7 +194,7 @@ vector<edge> cloningEdges(int maxID, int minID, int cloningFactor, vector<edge> 
     vector<edge> scaledNetwork;
 
     int count = 0;
-    while(count < cloningFactor){
+    while(count < cloningFactor - 1){
         for(auto & edge : vecEdges){
             clonedEdge.idNodeOne = nodeOneID;
             clonedEdge.activityNodeOne = edge.activityNodeOne; // keep activities/duration the same for clones
@@ -230,7 +222,8 @@ vector<edge> cloningEdges(int maxID, int minID, int cloningFactor, vector<edge> 
  * @return a vector of rewired edges
  */
 vector<int> genRandNums(double rewiringFactor, vector<edge> &clonedEdges){
-    int numberToRewire = rewiringFactor * clonedEdges.size();
+    int numberToRewire = rewiringFactor * (clonedEdges.size());
+    numberToRewire = numberToRewire*2; // 2R >= Mf
 
     // generate random numbers
     int floor = 0;
@@ -249,9 +242,6 @@ vector<int> genRandNums(double rewiringFactor, vector<edge> &clonedEdges){
             randomNums.push_back(rndNum);
         }
         count++;
-    }
-    for(auto num : randomNums){
-        cout << num << endl;
     }
     return randomNums;
 }
