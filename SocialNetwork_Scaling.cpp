@@ -144,12 +144,10 @@ int main(int argc, char * argv[]) {
     while(!randomNums.empty()){
         int nodeTwoId_a = clonedEdges.at(randomNums.back()).idNodeTwo; // get first ID to swap
         int nodeTwoAct_a = clonedEdges.at(randomNums.back()).activityNodeTwo; // get first activity to swap
-        int index1 = randomNums.back(); // save index of rand num
         randomNums.pop_back(); // remove rand num for next sawpping num
 
         int nodeTwoId_b = clonedEdges.at(randomNums.back()).idNodeTwo;
         int nodeTwoAct_b = clonedEdges.at(randomNums.back()).activityNodeTwo;
-        int index2 = randomNums.back();
         randomNums.pop_back();
 
         for(auto & edge : clonedEdges){ // traverse edges and swap IDs & activities of node 2
