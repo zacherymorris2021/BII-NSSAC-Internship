@@ -82,7 +82,7 @@ int main(int argc, char * argv[]) {
     else if(endRangeSourcePIDs > endRangeTargetPIDs){
         totalCopies = newInterval(endRangeSourcePIDs, sourcePIDs.size() + targetPIDs.size());
     }
-    
+
     // split copies into 2 vectors for "source copy" and "target copy" IDs
     vector<int> sourceCopies, targetCopies;
     vector<int>::iterator middleItr(totalCopies.begin() + totalCopies.size() / 2);
@@ -98,11 +98,11 @@ int main(int argc, char * argv[]) {
     // rewiring edges -- generating random numbers
     float amountOfRewiring1 = rewiringFactor * sourcePIDs.size(); // amount of edges to rewire
     float amountOfRewiring2 = amountOfRewiring1;
-    srand(time(NULL)); // srand() seeds rand() automatically
+    srand48(time(NULL)); // srand() seeds rand() automatically
     // random original IDs
     vector<int> originalRandomIDs;
     for(int i = 0; i < amountOfRewiring1; i++){ // populate vector with random IDs to rewire
-        int random = (rand()%(endRangeSourcePIDs - beginRangeSourcePIDs)) + beginRangeSourcePIDs;
+        int random = (lrand48()%(endRangeSourcePIDs - beginRangeSourcePIDs)) + beginRangeSourcePIDs;
         if(find(originalRandomIDs.begin(), originalRandomIDs.end(), random) != originalRandomIDs.end()){ // gets "rid", moves past duplicate random nums
             amountOfRewiring1++;
         }
@@ -121,7 +121,7 @@ int main(int argc, char * argv[]) {
             copyRandomIDs.push_back(random);
         }
     }
-    
+
     int indexOfOriginalSourcePID = 0;
     int originalTargetPIDToSave = 0;
     int indexOfCopySourcePID = 0;
@@ -145,6 +145,12 @@ int main(int argc, char * argv[]) {
         originalRandomIDs.pop_back();
         copyRandomIDs.pop_back();
     }
+
+    //cout << "origSourceIDs: " << sourcePIDs.at(0) << " " << sourcePIDs.at(1) << " " << sourcePIDs.at(2) << " " << sourcePIDs.at(3) << " " << sourcePIDs.at(4) << " " << sourcePIDs.at(5) << " " << sourcePIDs.at(6) << endl;
+    //cout << "origTargetIDs: " << sourcePIDs.at(0) << " " << targetPIDs.at(1) << " " << targetPIDs.at(2) << " " << targetPIDs.at(3) << " " << targetPIDs.at(4) << " " << targetPIDs.at(5) << " " << targetPIDs.at(6) << endl;
+    //cout << "--------------" << endl;
+    //cout << "copySourceIDs: " << sourceCopies.at(0) << " " << sourceCopies.at(1) << " " << sourceCopies.at(2) << " " << sourceCopies.at(3) << " " << sourceCopies.at(4) << " " << sourceCopies.at(5) << " " << sourceCopies.at(6) << endl;
+    //cout << "copyTargetIDs: " << targetCopies.at(0) << " " << targetCopies.at(1) << " " << targetCopies.at(2) << " " << targetCopies.at(3) << " " << targetCopies.at(4) << " " << targetCopies.at(5) << " " << targetCopies.at(6) << endl;
     return 0;
 }
 
