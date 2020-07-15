@@ -1,5 +1,5 @@
-# NSSAC_Internship
-Internship with Biocomplexity Institute and Initiative, NSSAC Division.
+# BII-NSSAC-Internship
+• Internship with Biocomplexity Institute and Initiative, NSSAC Division.
 
 ## Overview
 • One of 15 interns at the Computing for Global Challenges internship program through UVA's Biocomplexity Institute and Initiative's Network Systems Science and Advanced Computing (NSSAC) division.
@@ -18,4 +18,4 @@ Internship with Biocomplexity Institute and Initiative, NSSAC Division.
 6.) Wrote project overview paper [here](https://github.com/zacherymorris2021/BII-NSSAC-Internship/blob/master/C4GC_FinalPaper_ZacheryMorris.pdf), designed project poster (see [here](https://github.com/zacherymorris2021/BII-NSSAC-Internship/blob/master/C4GC%20Poster_Zachery_Morris.pdf)), and presented research to the division.
 
 ## Note
-I had to recently upload my old files from the companies repo.
+• I had to recently upload my old files from the companies repo.
