@@ -18,4 +18,4 @@
 6.) Wrote project overview paper (see [here](https://github.com/zacherymorris2021/BII-NSSAC-Internship/blob/master/C4GC_FinalPaper_ZacheryMorris.pdf)), designed project poster (see [here](https://github.com/zacherymorris2021/BII-NSSAC-Internship/blob/master/C4GC%20Poster_Zachery_Morris.pdf)), and presented research to the division.
 
 ## Note
-• I had to recently upload my old files from the companies repo.
+• I had to recently upload my old files from the company's repo.
